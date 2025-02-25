@@ -35,6 +35,37 @@ app.post('/register', async (req, res) => {
     res.send({ message: 'Device registered' });
 });
 
+
+app.post("/delete-device", async (req, res) => {
+  try {
+      const { deviceId } = req.body;
+
+      // Ensure deviceId is a valid string
+      if (!deviceId || typeof deviceId !== "string") {
+          return res.status(400).json({ message: "Invalid device ID format" });
+      }
+
+      console.log("Deleting device with ID:", deviceId);
+
+      // Find and delete device using `deviceId` (UUID as a string)
+      const result = await Device.findOneAndDelete({ deviceId });
+
+      console.log("Delete result:", result);
+
+      if (!result) {
+          return res.status(404).json({ message: "Device not found" });
+      }
+
+      res.json({ message: "Device deleted successfully" });
+  } catch (error) {
+      console.error("Delete error:", error);
+      res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
+
+
 app.post('/addNumber', async (req, res) => {
   const {  phoneNumber } = req.body;
   await CallSuspectedNum.create({SuspectedNum:phoneNumber});
@@ -90,6 +121,24 @@ app.get("/members", async (req, res) => {
     }
 });
 const normalizeNumber = (num) => num.replace(/\D/g, "").slice(-10); 
+
+app.post("/delete-member", async (req, res) => {
+  try {
+      const { id } = req.body;
+      // Delete member logic from database
+      const result = await CallSuspectedNum.findByIdAndDelete({_id:id});
+      if (!result) {
+          return res.status(200).json({ message: "Member not found" });
+      }
+      res.json({ message: "Member deleted successfully" });
+  } catch (error) {
+      res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
+
+
 // 🔹 Removes non-digits & keeps last 10 digits
 
 app.post("/calllogById", async (req, res) => {
@@ -197,6 +246,12 @@ app.get('/detect-calls', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch and validate international calls' });
   }
 });
+
+
+
+
+
+
 
 
   
